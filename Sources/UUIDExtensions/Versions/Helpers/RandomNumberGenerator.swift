@@ -10,18 +10,28 @@ protocol RandomNumberGenerator: Sendable {
     /// Returns a random 48 bit number.
     var int48: UInt64 { get }
 
+    /// Return an array of bytes.
+    ///
+    /// This is a connivence over calling ``byte`` multiple times manually.
+    ///
+    /// - Parameter size: The size of the array to return. E.g. a size of 5 will return an array of 5 random bytes.
+    /// - Returns: An array containing a number of random bytes.
     func bytes(size: Int) -> [UInt8]
 
     func of(size: UInt16) -> UInt16
 }
 
 extension RandomNumberGenerator where Self == DefaultRandomNumberGenerator {
+    @inlinable
+    @inline(__always)
     static var `default`: Self {
-        DefaultRandomNumberGenerator()
+        .shared
     }
 }
 
 struct DefaultRandomNumberGenerator: RandomNumberGenerator {
+    fileprivate static let shared = DefaultRandomNumberGenerator()
+
     var byte: UInt8 {
         UInt8.random(in: 0...255)
     }

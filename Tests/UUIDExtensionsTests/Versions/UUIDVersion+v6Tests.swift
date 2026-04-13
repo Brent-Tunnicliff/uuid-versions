@@ -35,9 +35,7 @@ struct UUIDVersionV6Tests {
     }
 
     @Test
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func isValid() {
         for _ in 0..<1000 {
             let uuid = UUID(version: .v6).uuidString.lowercased()
@@ -58,9 +56,7 @@ struct UUIDVersionV6Tests {
 
     /// We expect v6 to not have the caching that existed in v1.
     @Test
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func newNodeAndClockSequenceOnSubsequentCalls() {
         let firstValue = generator.new().uuidString
         #expect(firstValue == "1EC9414C-232A-6B00-B3C8-9F6BDECED846")

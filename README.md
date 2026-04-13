@@ -200,7 +200,7 @@ Time-ordered UUID, useful when the wanting the UUID value to increment with each
 
 Generates with milliseconds in the most significant bits and random for the remaining.
 
-Optional configurations can be used to increase the precision of the timestamp to microseconds, and/or adding counter logic.
+Optional configurations can be used to increase the precision of the timestamp to sub-milliseconds, and/or adding counter logic.
 
 Both of the counter options guarantee that the UUID will always increment from the last, even if many get generated within the same timestamp value.
 
@@ -208,7 +208,7 @@ Both of the counter options guarantee that the UUID will always increment from t
 - Monotonic random counter makes sure the random values of the UUID are always a higher value then any previous values that share the same timestamp in a way that makes predicting the next value difficult.
 
 For both counter types, in the edge case that we reach the highest possible value for that timestamp, it will sleep and wait for the next time stamp value.
-This can be either 1 millisecond, or 1 microsecond based on if increased clock precision is enabled or not.
+This can be either 1 millisecond, or less based on if increased clock precision is enabled or not.
 
 ```swift
 // Default implementation
@@ -219,7 +219,7 @@ let id: UUID = .v7(configuration: .default)
 ``` 
 
 ```swift
-// Generates timestamp with microseconds 
+// Generates timestamp with sub-milliseconds 
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision)
 ```
 
@@ -234,12 +234,12 @@ let id: UUID = .v7(configuration: .with(counter: .monotonicRandom))
 ```
 
 ```swift
-// Generates timestamp with microseconds and the fixed length counter
+// Generates timestamp with sub-milliseconds and the fixed length counter
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision(counter: .fixedLength))
 ```
 
 ```swift
-// Generates timestamp with microseconds and the monotonic random counter
+// Generates timestamp with sub-milliseconds and the monotonic random counter
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision(counter: .monotonicRandom))
 ```
 

@@ -41,7 +41,7 @@ struct UUIDVersionV7Tests {
                 randomNumberGenerator: mockRandomNumberGenerator
             ),
             randomNumberGenerator: mockRandomNumberGenerator,
-            sleepProvider: MockSleepProvider()
+            sleepService: MockSleepService()
         )
     }
 
@@ -53,9 +53,7 @@ struct UUIDVersionV7Tests {
     }
 
     @Test
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func isValid() {
         let configurations: [V7Configuration] = [
             .default,
@@ -90,13 +88,16 @@ struct UUIDVersionV7Tests {
 struct UUIDVersionV7ConfigurationTests {
     private let mockDateService: MockDateService
     private let mockRandomNumberGenerator: MockRandomNumberGenerator
-    private let mockSleepProvider = MockSleepProvider()
+    private let mockSleepService = MockSleepService()
 
     init() throws {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = try #require(formatter.date(from: "2022-02-22T19:22:22.12345Z"))
-        self.mockDateService = MockDateService(nowValue: date)
+        let date = try #require(formatter.date(from: "2022-02-22T19:22:22.1234567Z"))
+        self.mockDateService = MockDateService(
+            fractionNanosecondsValue: 1870,
+            nowValue: date
+        )
         self.mockRandomNumberGenerator = MockRandomNumberGenerator(
             // Adding all the bytes needed for any of the tests so each test doesn't need to set this up themselves.
             bytesValue: Array(0x00...0x2f),
@@ -117,10 +118,10 @@ struct UUIDVersionV7ConfigurationTests {
                 randomNumberGenerator: mockRandomNumberGenerator
             ),
             randomNumberGenerator: mockRandomNumberGenerator,
-            sleepProvider: mockSleepProvider
+            sleepService: mockSleepService
         )
 
-        #expect(generator.new().uuidString == "017F22E2-7A2B-73E7-8001-020304050607")
+        #expect(generator.new().uuidString == "017F22E2-7A2B-774E-8001-020304050607")
     }
 
     enum CounterArgument: CaseIterable {
@@ -150,19 +151,19 @@ struct UUIDVersionV7ConfigurationTests {
                 )
             case .increasedClockPrecisionAndFixedLength:
                 (
-                    "017F22E2-7A2B-73E7-8000-000102030405",
-                    "017F22E2-7A2B-73E7-8001-060708090A0B",
-                    "017F22E2-7A2B-73E7-8002-0C0D0E0F1011",
-                    "017F22E2-7A2B-73E7-8003-121314151617",
-                    "017F22E2-7E13-73E7-8987-18191A1B1C1D",
+                    "017F22E2-7A2B-774E-8000-000102030405",
+                    "017F22E2-7A2B-774E-8001-060708090A0B",
+                    "017F22E2-7A2B-774E-8002-0C0D0E0F1011",
+                    "017F22E2-7A2B-774E-8003-121314151617",
+                    "017F22E2-7E13-774E-8987-18191A1B1C1D",
                 )
             case .increasedClockPrecisionAndMonotonicRandom:
                 (
-                    "017F22E2-7A2B-73E7-8001-020304050607",
-                    "017F22E2-7A2B-73E7-8001-020304050715",
-                    "017F22E2-7A2B-73E7-8001-0203040508AC",
-                    "017F22E2-7A2B-73E7-8001-020304050972",
-                    "017F22E2-7E13-73E7-8809-0A0B0C0D0E0F",
+                    "017F22E2-7A2B-774E-8001-020304050607",
+                    "017F22E2-7A2B-774E-8001-020304050715",
+                    "017F22E2-7A2B-774E-8001-0203040508AC",
+                    "017F22E2-7A2B-774E-8001-020304050972",
+                    "017F22E2-7E13-774E-8809-0A0B0C0D0E0F",
                 )
             case .monotonicRandom:
                 (
@@ -175,20 +176,18 @@ struct UUIDVersionV7ConfigurationTests {
             }
         }
 
-        var expectedSleepSeconds: TimeInterval {
+        var expectedTimestampWait: (millisecondsSince1970: UInt64, fractionNanoseconds: UInt16) {
             switch self {
             case .fixedLength, .monotonicRandom:
-                0.001
+                (1_645_557_742_123, 0)
             case .increasedClockPrecisionAndFixedLength, .increasedClockPrecisionAndMonotonicRandom:
-                0.000001
+                (1_645_557_742_123, 1870)
             }
         }
     }
 
     @Test(arguments: CounterArgument.allCases)
-    @available(iOS 17, *)
-    @available(tvOS 17, *)
-    @available(watchOS 10, *)
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, *)
     func counter(_ argument: CounterArgument) {
         let generator = VersionSevenUUIDGenerator(
             configuration: argument.configuration,
@@ -200,7 +199,7 @@ struct UUIDVersionV7ConfigurationTests {
                 randomNumberGenerator: mockRandomNumberGenerator
             ),
             randomNumberGenerator: mockRandomNumberGenerator,
-            sleepProvider: mockSleepProvider
+            sleepService: mockSleepService
         )
 
         var currentValue = generator.new()
@@ -238,11 +237,11 @@ struct UUIDVersionV7ConfigurationTests {
         let sleepLength = await withCheckedContinuation { continuation in
             let mockRandomNumberGenerator = MockRandomNumberGenerator.maxValues
 
-            mockSleepProvider.forHandler = {
+            mockSleepService.waitUntilNextTimestampCompletionHandler = {
                 // Make sure to increment the date to avoid this immediately getting called again.
                 // As the system will call to create a new UUID right after this "sleep".
                 mockDateService.nowValue = mockDateService.nowValue.advanced(by: 1)
-                continuation.resume(returning: $0)
+                continuation.resume(returning: (millisecondsSince1970: $0, fractionNanoseconds: $1))
             }
 
             let generator = VersionSevenUUIDGenerator(
@@ -255,7 +254,7 @@ struct UUIDVersionV7ConfigurationTests {
                     randomNumberGenerator: mockRandomNumberGenerator
                 ),
                 randomNumberGenerator: mockRandomNumberGenerator,
-                sleepProvider: mockSleepProvider
+                sleepService: mockSleepService
             )
 
             // For this test we don't care about the results, just that the system slept to wait
@@ -266,14 +265,14 @@ struct UUIDVersionV7ConfigurationTests {
             _ = generator.new()
         }
 
-        #expect(sleepLength == argument.expectedSleepSeconds)
+        let expectedTimestampWait = argument.expectedTimestampWait
+        #expect(sleepLength.millisecondsSince1970 == expectedTimestampWait.millisecondsSince1970)
+        #expect(sleepLength.fractionNanoseconds == expectedTimestampWait.fractionNanoseconds)
     }
 
     /// Sanity test that the real sleep logic does not take a long time.
     @Test(arguments: CounterArgument.allCases)
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func waitingForNextTimestampShouldBeVerySmall(_ argument: CounterArgument) async throws {
         try await withThrowingTaskGroup { group in
             // timeout task
@@ -288,7 +287,7 @@ struct UUIDVersionV7ConfigurationTests {
                 await withCheckedContinuation { continuation in
                     let mockRandomNumberGenerator = MockRandomNumberGenerator.maxValues
 
-                    let wrappedSleepProvider = WrappedSleepProvider(wrapped: .default) {
+                    let wrappedSleepService = WrappedSleepService(wrapped: .default) {
                         // Make sure to increment the date to avoid this immediately getting called again.
                         // As the system will call to create a new UUID right after this "sleep".
                         mockDateService.nowValue = mockDateService.nowValue.advanced(by: 1)
@@ -305,7 +304,7 @@ struct UUIDVersionV7ConfigurationTests {
                             randomNumberGenerator: mockRandomNumberGenerator
                         ),
                         randomNumberGenerator: mockRandomNumberGenerator,
-                        sleepProvider: wrappedSleepProvider
+                        sleepService: wrappedSleepService
                     )
 
                     // For this test we don't care about the results, just that the system slept to wait
@@ -337,22 +336,24 @@ extension MockRandomNumberGenerator {
     }
 }
 
-/// Wraps the input SleepProvider which does get called, but completion handler gets called after the wrapped object finishes.
-final class WrappedSleepProvider: SleepProvider {
-    private let wrapped: any SleepProvider
-
+/// Wraps the input SleepService which does get called, but completion handler gets called after the wrapped object finishes.
+final class WrappedSleepService: SleepService {
+    private let wrapped: any SleepService
     private let completionHandler: @Sendable () -> Void
 
     init(
-        wrapped: any SleepProvider,
+        wrapped: any SleepService,
         completionHandler: @Sendable @escaping () -> Void
     ) {
         self.completionHandler = completionHandler
         self.wrapped = wrapped
     }
 
-    func `for`(_ timeInterval: TimeInterval) {
-        wrapped.for(timeInterval)
+    func waitUntilNextTimestamp(millisecondsSince1970: UInt64, fractionNanoseconds: UInt16) {
+        wrapped.waitUntilNextTimestamp(
+            millisecondsSince1970: millisecondsSince1970,
+            fractionNanoseconds: fractionNanoseconds
+        )
         completionHandler()
     }
 }

@@ -14,9 +14,7 @@ struct UUIDVersionV4Tests {
     // UUID v4 wraps the default system implementation.
     // So this test is a sanity check that will fail if the system default ever changes.
     @Test
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func isValid() {
         for _ in 0..<1000 {
             let uuid = UUID(version: .v4).uuidString.lowercased()

@@ -36,16 +36,13 @@ extension UUIDVersion {
 
 struct VersionSevenUUIDGenerator {
     let id = 7
-    private let calendar = Calendar(identifier: .iso8601)
     private let configuration: V7Configuration
     private let dateService: any DateService
-    private let maxSize = 16
-    private let microsecond: TimeInterval = 0.000001
-    private let millisecond: TimeInterval = 0.001
-    private let randomNumberGenerator: any RandomNumberGenerator
-    private let sleepProvider: any SleepProvider
     private let fixedLengthCounterState: FixedLengthCounterState
+    private let maxSize = 16
     private let monotonicRandomCounterState: MonotonicRandomCounterState
+    private let randomNumberGenerator: any RandomNumberGenerator
+    private let sleepService: any SleepService
 
     fileprivate init(configuration: V7Configuration) {
         self.init(
@@ -54,7 +51,7 @@ struct VersionSevenUUIDGenerator {
             fixedLengthCounterState: .shared,
             monotonicRandomCounterState: .shared,
             randomNumberGenerator: .default,
-            sleepProvider: .default,
+            sleepService: .default,
         )
     }
 
@@ -64,14 +61,14 @@ struct VersionSevenUUIDGenerator {
         fixedLengthCounterState: FixedLengthCounterState,
         monotonicRandomCounterState: MonotonicRandomCounterState,
         randomNumberGenerator: any RandomNumberGenerator,
-        sleepProvider: any SleepProvider
+        sleepService: any SleepService
     ) {
         self.configuration = configuration
         self.dateService = dateService
         self.fixedLengthCounterState = fixedLengthCounterState
         self.monotonicRandomCounterState = monotonicRandomCounterState
         self.randomNumberGenerator = randomNumberGenerator
-        self.sleepProvider = sleepProvider
+        self.sleepService = sleepService
     }
 }
 
@@ -111,7 +108,7 @@ extension VersionSevenUUIDGenerator: UUIDGenerator {
         }
 
         // Timestamp (48-bit, milliseconds since Unix epoch)
-        let timestamp = UInt64(date.timeIntervalSince1970 * 1000)
+        let timestamp = date.millisecondsSince1970
         bytes[index] = UInt8((timestamp >> 40) & 0xFF)
         bytes[index] = UInt8((timestamp >> 32) & 0xFF)
         bytes[index] = UInt8((timestamp >> 24) & 0xFF)
@@ -119,14 +116,13 @@ extension VersionSevenUUIDGenerator: UUIDGenerator {
         bytes[index] = UInt8((timestamp >> 8) & 0xFF)
         bytes[index] = UInt8(timestamp & 0xFF)
 
-        let microseconds: UInt64
+        let fractionNanoseconds: UInt16
         if configuration.increasedClockPrecision {
-            let nanoseconds = calendar.component(.nanosecond, from: date)
-            microseconds = UInt64((nanoseconds % 1_000_000) / 1000)
-            bytes[index] = UInt8((microseconds >> 8) & 0x0F)
-            bytes[index] = UInt8(microseconds & 0xFF)
+            fractionNanoseconds = dateService.fractionNanoseconds()
+            bytes[index] = UInt8((fractionNanoseconds >> 8) & 0x0F)
+            bytes[index] = UInt8(fractionNanoseconds & 0xFF)
         } else {
-            microseconds = 0
+            fractionNanoseconds = 0
         }
 
         let randomBytes: [UInt8]
@@ -138,7 +134,7 @@ extension VersionSevenUUIDGenerator: UUIDGenerator {
                 // Add the counter then had the rest with random values.
                 let fixedLength = try fixedLengthCounterState.getFixedLengthCounter(
                     timestamp: timestamp,
-                    microseconds: microseconds
+                    fractionNanoseconds: fractionNanoseconds
                 )
                 bytes[index] = UInt8((fixedLength >> 8) & 0xFF)
                 bytes[index] = UInt8(fixedLength & 0xFF)
@@ -147,15 +143,18 @@ extension VersionSevenUUIDGenerator: UUIDGenerator {
                 // The random values are the counter as they always go up for the same.
                 randomBytes = try monotonicRandomCounterState.getMonotonicRandomCounter(
                     timestamp: timestamp,
-                    microseconds: microseconds,
+                    fractionNanoseconds: fractionNanoseconds,
                     size: maxSize - currentIndexValue
                 )
             }
         } catch {
-            // The only way that this can fail is in the unlikely case that the counter was at the limit
-            // and could no longer increment.
+            // Wait until the next timestamp.
+            // The only way that this can fail is in the unlikely case that the counter was at the limit and could no longer increment.
             // If that happens the only solution is to wait until the next timestamp before we can try again.
-            sleepProvider.for(configuration.increasedClockPrecision ? microsecond : millisecond)
+            sleepService.waitUntilNextTimestamp(
+                millisecondsSince1970: timestamp,
+                fractionNanoseconds: fractionNanoseconds
+            )
             return new()
         }
 
@@ -225,9 +224,9 @@ extension VersionSevenUUIDGenerator {
             self.randomNumberGenerator = randomNumberGenerator
         }
 
-        func getFixedLengthCounter(timestamp: UInt64, microseconds: UInt64) throws -> UInt16 {
+        func getFixedLengthCounter(timestamp: UInt64, fractionNanoseconds: UInt16) throws -> UInt16 {
             try lock.withLock {
-                let key = Key(timestamp: timestamp, microseconds: microseconds)
+                let key = Key(timestamp: timestamp, fractionNanoseconds: fractionNanoseconds)
                 let max: UInt16 = 0x0FFF
                 guard let cache = fixedLengthCounterCache, key <= cache.key else {
                     return cacheAndReturnFixedLengthCounter(randomNumberGenerator.of(size: max), for: key)
@@ -268,9 +267,9 @@ extension VersionSevenUUIDGenerator {
             self.randomNumberGenerator = randomNumberGenerator
         }
 
-        func getMonotonicRandomCounter(timestamp: UInt64, microseconds: UInt64, size: Int) throws -> [UInt8] {
+        func getMonotonicRandomCounter(timestamp: UInt64, fractionNanoseconds: UInt16, size: Int) throws -> [UInt8] {
             try lock.withLock {
-                let key = Key(timestamp: timestamp, microseconds: microseconds)
+                let key = Key(timestamp: timestamp, fractionNanoseconds: fractionNanoseconds)
                 guard let cache = monotonicRandomCounterCache[size], key <= cache.key else {
                     return cacheAndReturnMonotonicRandomCounter(
                         randomNumberGenerator.bytes(size: size),
@@ -321,14 +320,14 @@ extension VersionSevenUUIDGenerator {
 extension VersionSevenUUIDGenerator {
     private struct Key: Comparable, Hashable {
         let timestamp: UInt64
-        let microseconds: UInt64
+        let fractionNanoseconds: UInt16
 
         static func < (lhs: VersionSevenUUIDGenerator.Key, rhs: VersionSevenUUIDGenerator.Key) -> Bool {
             guard lhs.timestamp == rhs.timestamp else {
                 return lhs.timestamp < rhs.timestamp
             }
 
-            return lhs.microseconds < rhs.microseconds
+            return lhs.fractionNanoseconds < rhs.fractionNanoseconds
         }
     }
 

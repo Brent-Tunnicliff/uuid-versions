@@ -23,14 +23,17 @@ extension V7Configuration {
     ///
     /// Generates with milliseconds in the most significant bits and random for the remaining.
     ///
-    /// - warning: If multiple values are generated within the same millisecond there is no guarantee of order between them.
-    ///   If you need to guarantee the order, then recommend using ``with(counter:)`` or  ``withIncreasedClockPrecision(counter:)`` instead.
+    /// If multiple values are generated within the same millisecond there is no guarantee of order between them.
+    /// If you need to guarantee the order, then recommend using ``with(counter:)`` instead.
     public static let `default` = V7Configuration()
 
     /// UUID will generate with an increased clock precision.
     ///
     /// Increased clock precision means using fractions of a millisecond in place of the random bits immediately following the timestamp.
-    /// Based on method 1 <https://www.rfc-editor.org/rfc/rfc9562#section-6.2>.
+    /// Based on method 3 <https://www.rfc-editor.org/rfc/rfc9562#section-6.2>.
+    ///
+    /// If multiple values are generated within the same millisecond there is no guarantee of order between them.
+    /// If you need to guarantee the order, then recommend using ``withIncreasedClockPrecision(counter:)`` instead.
     public static let withIncreasedClockPrecision = V7Configuration(
         increasedClockPrecision: true
     )
@@ -38,7 +41,7 @@ extension V7Configuration {
     /// UUID will generate with an increased clock precision and a counter.
     ///
     /// Increased clock precision means using fractions of a millisecond in place of the random bits immediately following the timestamp.
-    /// Based on method 1 <https://www.rfc-editor.org/rfc/rfc9562#section-6.2>.
+    /// Based on method 3 <https://www.rfc-editor.org/rfc/rfc9562#section-6.2>.
     public static func withIncreasedClockPrecision(counter: Counter) -> V7Configuration {
         V7Configuration(counter: counter, increasedClockPrecision: true)
     }

@@ -32,9 +32,7 @@ struct UUIDVersionV5Tests {
     }
 
     @Test
-    @available(iOS 16.0, *)
-    @available(tvOS 16.0, *)
-    @available(watchOS 9.0, *)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func isValid() {
         for number in 0..<1000 {
             let name = (0...number).map { _ in
