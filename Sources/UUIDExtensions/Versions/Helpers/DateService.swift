@@ -108,7 +108,7 @@ private struct ContinuousClockWrapper: ClockWrapper {
     private let anchorInstant: (any Sendable)?
 
     init() {
-        if #available(iOS 16.0, *) {
+        if #available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *) {
             let clock = ContinuousClock()
             self.clock = clock
             self.anchorInstant = clock.now

@@ -100,7 +100,7 @@ struct UUIDVersionV7ConfigurationTests {
         )
         self.mockRandomNumberGenerator = MockRandomNumberGenerator(
             // Adding all the bytes needed for any of the tests so each test doesn't need to set this up themselves.
-            bytesValue: Array(0x00...0x2f),
+            bytesValue: Array(0x00...0x6f),
             ofSizeUInt16: [0x0000, 0x0987],
             singleByteValues: [0x15, 0xac, 0x72]
         )
@@ -319,6 +319,76 @@ struct UUIDVersionV7ConfigurationTests {
             // Await for the first group to return, if it is the timeout then it will throw.
             try await group.first(where: { _ in true })
             group.cancelAll()
+        }
+    }
+
+    @Test(arguments: [true, false])
+    func timestampsAlwaysIncrement(withIncreasedClockPrecision: Bool) throws {
+        let generator = VersionSevenUUIDGenerator(
+            configuration: withIncreasedClockPrecision ? .withIncreasedClockPrecision : .default,
+            dateService: mockDateService,
+            fixedLengthCounterState: VersionSevenUUIDGenerator.FixedLengthCounterState(
+                randomNumberGenerator: mockRandomNumberGenerator
+            ),
+            monotonicRandomCounterState: VersionSevenUUIDGenerator.MonotonicRandomCounterState(
+                randomNumberGenerator: mockRandomNumberGenerator
+            ),
+            randomNumberGenerator: mockRandomNumberGenerator,
+            sleepService: mockSleepService
+        )
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+        let subMillisecondIncrement: UInt16 = withIncreasedClockPrecision ? 1 : 0
+        let dates: [Date] = try [
+            // Initial
+            "2022-02-22T19:22:22.123Z",
+            // Increment sub-millisecond, date same as above because it will be incremented via a different field.
+            withIncreasedClockPrecision ? "2022-02-22T19:22:22.123Z" : nil,
+            // Increment millisecond
+            "2022-02-22T19:22:22.124Z",
+            // Increment second
+            "2022-02-22T19:22:23.124Z",
+            // Increment minute
+            "2022-02-22T19:23:23.124Z",
+            // Increment hour
+            "2022-02-22T20:23:23.124Z",
+            // Increment day
+            "2022-02-23T20:23:23.124Z",
+            // Increment month
+            "2022-03-23T20:23:23.124Z",
+            // Increment year
+            "2023-03-23T20:23:23.124Z",
+            // Increment 10 years
+            "2033-03-23T20:23:23.124Z",
+            // Increment 100 years
+            "2133-03-23T20:23:23.124Z",
+            // Increment 1000 years
+            "3133-03-23T20:23:23.124Z",
+        ].compactMap { (date: String?) in
+            try date.map {
+                try #require(formatter.date(from: $0))
+            }
+        }
+
+        // Lets do the initial one manually
+        mockDateService.nowValue = dates[0]
+        mockDateService.fractionNanosecondsValue = 0
+        var results: [UUID] = [generator.new()]
+
+        mockDateService.fractionNanosecondsValue = subMillisecondIncrement
+
+        for date in dates.dropFirst() {
+            mockDateService.nowValue = date
+            let newValue = generator.new()
+
+            // Check that the new date is always greater than the previous ones.
+            for previousResult in results {
+                #expect(previousResult.uuidString < newValue.uuidString, "for '\(formatter.string(from: date))'")
+            }
+
+            results.append(newValue)
         }
     }
 }
