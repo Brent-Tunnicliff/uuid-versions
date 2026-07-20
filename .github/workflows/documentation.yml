@@ -20,6 +20,21 @@ permissions:
 
 jobs:
   documentation:
+    strategy:
+      # Don't cancel the other matrix values if one fails.
+      fail-fast: false
+      matrix:
+        target: [
+          "UUIDConstants",
+          "UUIDv1",
+          "UUIDv2",
+          "UUIDv3",
+          "UUIDv4",
+          "UUIDv5",
+          "UUIDv6",
+          "UUIDv7",
+          "UUIDv8",
+        ]
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/documentation.yml@v2
     if: >
       ${{
@@ -33,4 +48,4 @@ jobs:
     with:
       fetch_depth: 0
       ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      target: "UUIDExtensions"
+      target: "${{ matrix.target }}"

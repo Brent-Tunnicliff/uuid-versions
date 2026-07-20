@@ -268,7 +268,7 @@ Can be generated based on:
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-8>
 
-### Constants
+### UUIDConstants
 
 The project has a small number of constants defined in [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562).
 They are added as static extension to the Foundation.UUID type.

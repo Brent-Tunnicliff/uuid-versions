@@ -28,6 +28,10 @@ let package = Package(
     ],
     products: [
         .library(
+            name: "UUIDConstants",
+            targets: ["UUIDConstants"]
+        ),
+        .library(
             name: "UUIDv1",
             targets: ["UUIDv1"]
         ),
