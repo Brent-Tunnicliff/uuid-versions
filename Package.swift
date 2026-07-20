@@ -13,7 +13,7 @@ let nonDarwinDependencyCondition = TargetDependencyCondition.when(
         .linux,
         .openbsd,
         .wasi,
-        .windows
+        .windows,
     ]
 )
 
