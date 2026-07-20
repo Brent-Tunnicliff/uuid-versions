@@ -17,15 +17,71 @@
     {
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "UUIDMacrosTests",
-        "name" : "UUIDMacrosTests"
+        "identifier" : "InternalHelpersTests",
+        "name" : "InternalHelpersTests"
       }
     },
     {
       "target" : {
         "containerPath" : "container:",
-        "identifier" : "UUIDExtensionsTests",
-        "name" : "UUIDExtensionsTests"
+        "identifier" : "UUIDConstantsTests",
+        "name" : "UUIDConstantsTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv1Tests",
+        "name" : "UUIDv1Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv2Tests",
+        "name" : "UUIDv2Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv3Tests",
+        "name" : "UUIDv3Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv4Tests",
+        "name" : "UUIDv4Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv5Tests",
+        "name" : "UUIDv5Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv6Tests",
+        "name" : "UUIDv6Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv7Tests",
+        "name" : "UUIDv7Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UUIDv8Tests",
+        "name" : "UUIDv8Tests"
       }
     }
   ],
