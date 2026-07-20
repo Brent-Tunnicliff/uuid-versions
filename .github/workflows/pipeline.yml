@@ -36,7 +36,7 @@ jobs:
       runs_on: "macos-26"
       scheme: "uuid-extensions"
       simulator_version: "${{ matrix.target.simulator_version }}"
-      xcode_path: "/Applications/Xcode_26.3.app"
+      xcode_path: "/Applications/Xcode_26.6.app"
 
   swift:
     strategy:
@@ -66,9 +66,6 @@ jobs:
     with:
       runs_on: "ubuntu-latest"
       sdks: "${{ matrix.platform.sdks }}"
-      # Due to a bug we cannot build test targets for packages that contain macros when cross compiling different archs.
-      # See: https://github.com/swiftlang/swift-package-manager/issues/8094
-      skip_tests: true
       swift_sdk: "${{ matrix.platform.swift_sdk }}"
       swift_version: "6.3"
 
