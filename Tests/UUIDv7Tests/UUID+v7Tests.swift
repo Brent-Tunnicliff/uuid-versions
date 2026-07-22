@@ -52,7 +52,7 @@ struct UUIDV7Tests {
     }
 
     @Test
-    @available(iOS 17.0, tvOS 16.0, watchOS 9.0, *)
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, *)
     func isValid() {
         let configurations: [Configuration] = [
             .default,
@@ -133,6 +133,7 @@ struct UUIDVersionV7ConfigurationTests {
     }
 
     @Test
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func withIncreasedClockPrecision() {
         let uuid = UUID.v7(
             configuration: .withIncreasedClockPrecision,
@@ -146,6 +147,7 @@ struct UUIDVersionV7ConfigurationTests {
         #expect(uuid.uuidString == "017F22E2-7A2B-774E-8001-020304050607")
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     enum CounterArgument: CaseIterable {
         case fixedLength
         case increasedClockPrecisionAndFixedLength
@@ -253,6 +255,7 @@ struct UUIDVersionV7ConfigurationTests {
     }
 
     @Test(arguments: CounterArgument.allCases)
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func counterWaitsForNextTimestampAtMaxValue(_ argument: CounterArgument) async {
         let sleepLength = await withCheckedContinuation { continuation in
             let mockRandomNumberGenerator = MockRandomNumberGenerator.mockWithMaxValues()
@@ -354,6 +357,7 @@ struct UUIDVersionV7ConfigurationTests {
     }
 
     @Test(arguments: [true, false])
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func timestampsAlwaysIncrement(withIncreasedClockPrecision: Bool) throws {
         func new() -> UUID {
             .v7(

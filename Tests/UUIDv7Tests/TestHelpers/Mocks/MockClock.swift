@@ -2,7 +2,7 @@
 
 @testable import UUIDv7
 
-@available(iOS 16.0, *)
+@available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 final class MockClock: Clock, @unchecked Sendable {
     private var _now: Instant
     var now: Instant {
@@ -26,7 +26,7 @@ final class MockClock: Clock, @unchecked Sendable {
     func sleep(until deadline: Instant, tolerance: Duration?) async throws {}
 }
 
-@available(iOS 16.0, *)
+@available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 extension MockClock {
     struct Instant: InstantProtocol {
         typealias Duration = Swift.Duration
