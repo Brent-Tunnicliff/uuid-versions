@@ -35,8 +35,8 @@ struct NodeTests {
 
     @Test
     func description() {
-        let node = Node(rawValue: (0x00, 0x31, 0x74, 0x99, 0xbd, 0xff))
-        #expect(node.description == "(0x00, 0x31, 0x74, 0x99, 0xbd, 0xff)")
+        let node = Node(rawValue: (0x00, 0x01, 0x74, 0x10, 0xbd, 0xff))
+        #expect(node.description == "(00, 01, 74, 10, bd, ff)")
     }
 
     // MARK: - Equatable

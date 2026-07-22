@@ -75,7 +75,19 @@ extension Node: Codable {
 extension Node: CustomStringConvertible {
     /// A textual representation of this instance.
     public var description: String {
-        "(" + asArray.map({ String(format: "0x%02x", $0) }).joined(separator: ", ") + ")"
+        let values: [String] = asArray.map {
+            // FoundationEssentials does not support `String(format: "0x%02x", $0)`.
+            // So just manually formatting the values instead.
+            var value = String($0, radix: 16)
+
+            while value.count < 2 {
+                value = "0" + value
+            }
+
+            return value
+        }
+
+        return "(" + values.map(\.description).joined(separator: ", ") + ")"
     }
 }
 
