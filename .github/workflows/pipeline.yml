@@ -57,17 +57,15 @@ jobs:
       # Don't cancel the other matrix values if one fails.
       fail-fast: false
       matrix:
-        platform: [
-          { sdks: "android", swift_sdk: "swift-6.3-RELEASE_android" },
-          { sdks: "wasm", swift_sdk: "swift-6.3-RELEASE_wasm" },
-        ]
+        platform: ["android", "wasm"]
+        swift_version: ["6.3.3"]
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
-    name: "swift (${{ matrix.platform.sdks }})"
+    name: "swift (${{ matrix.platform }})"
     with:
       runs_on: "ubuntu-latest"
-      sdks: "${{ matrix.platform.sdks }}"
-      swift_sdk: "${{ matrix.platform.swift_sdk }}"
-      swift_version: "6.3"
+      sdks: "${{ matrix.platform }}"
+      swift_sdk: "swift-${{ matrix.swift_version }}-RELEASE_${{ matrix.platform }}"
+      swift_version: "${{ matrix.swift_version }}"
 
   lint:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/lint.yml@v2
