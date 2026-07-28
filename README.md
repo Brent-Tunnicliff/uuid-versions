@@ -166,7 +166,7 @@ Has been included for completeness.
 ```swift
 let id: UUID = .v4()
 
-// is the same as
+// is just a wrapper of:
 let id: UUID = UUID()
 ```
 

@@ -21,10 +21,10 @@ struct UUIDV6Tests {
 
     // https://www.rfc-editor.org/rfc/rfc9562#name-example-of-a-uuidv6-value
     @Test
-    func matchesTheStandardExample() {
+    func matchesTheStandardExample() throws {
         let uuid = UUID.v6(
             clockSequenceGenerator: .mock(),
-            dateService: .mock(),
+            dateService: try .mock(),
             randomNodeGenerator: mockRandomNumberGenerator
         ).uuidString
         #expect(uuid == "1EC9414C-232A-6B00-B3C8-9F6BDECED846")
@@ -53,8 +53,8 @@ struct UUIDV6Tests {
     /// We expect v6 to not have the caching that existed in v1.
     @Test
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
-    func newNodeAndClockSequenceOnSubsequentCalls() {
-        var mockDateService = MockDateService()
+    func newNodeAndClockSequenceOnSubsequentCalls() throws {
+        var mockDateService = try MockDateService()
         var mockClockSequenceGenerator = MockClockSequenceGenerator.mock()
         let firstValue = UUID.v6(
             clockSequenceGenerator: mockClockSequenceGenerator,

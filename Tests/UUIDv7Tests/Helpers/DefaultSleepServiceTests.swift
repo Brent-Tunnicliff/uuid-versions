@@ -44,15 +44,15 @@ struct DefaultSleepServiceTests {
 
         try await withThrowingTaskGroup { group in
             group.addTask {
-                try await Task.sleep(for: .seconds(1))
-                throw TimeoutError()
-            }
-
-            group.addTask {
                 sleepService.waitUntilNextTimestamp(
                     millisecondsSince1970: 0,
                     fractionNanoseconds: 0
                 )
+            }
+
+            group.addTask {
+                try await Task.sleep(for: .seconds(1))
+                throw TimeoutError()
             }
 
             // Await for the first group to return, if it is the timeout then it will throw.

@@ -13,10 +13,10 @@ import Testing
 struct UUIDV1Tests {
     // https://www.rfc-editor.org/rfc/rfc9562#name-example-of-a-uuidv1-value
     @Test
-    func matchesTheStandardExample() {
+    func matchesTheStandardExample() throws {
         let uuid = UUID.v1(
             clockSequenceService: .mock(clockSequence: 0x33C8),
-            dateService: .mock(),
+            dateService: try .mock(),
             nodeStore: .mock()
         ).uuidString
         #expect(uuid == "C232AB00-9414-11EC-B3C8-9F6BDECED846")

@@ -13,7 +13,7 @@ import Testing
 @Suite("UUID+v7Tests")
 struct UUIDV7Tests {
     private static let randA = 0xCC3
-    private static let randB = (0b01 << 60) | 0x8_C4_DC_0C_0C_07_39_8F
+    private static let randB: Int64 = (0b01 << 60) | 0x8_C4_DC_0C_0C_07_39_8F
     private let mockRandomNumberGenerator: MockRandomNumberGenerator = .mock(
         bytesSizeValues: [
             UInt8((randA >> 8) & 0x0F),
@@ -33,7 +33,7 @@ struct UUIDV7Tests {
     @Test
     func matchesTheStandardExample() throws {
         // MockDateService uses the common RFC9562 date example by default, so lets just reference it here.
-        let mockDateService = MockDateService()
+        let mockDateService = try MockDateService()
         let uuid = UUID.v7(
             configuration: .default,
             fixedLengthCounterState: FixedLengthCounterState(
@@ -107,9 +107,8 @@ struct UUIDVersionV7ConfigurationTests {
     private let mockTimestampService: MockTimestampService
 
     init() throws {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = try #require(formatter.date(from: "2022-02-22T19:22:22.123Z"))
+        let date = try Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse("2022-02-22T19:22:22.123Z")
+
         mockTimestampService = MockTimestampService(
             timestampValue: Timestamp(
                 milliseconds: date.millisecondsSince1970,
@@ -370,8 +369,7 @@ struct UUIDVersionV7ConfigurationTests {
             )
         }
 
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let strategy = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
 
         let subMillisecondIncrement: UInt16 = withIncreasedClockPrecision ? 1 : 0
         let dates: [Date] = try [
@@ -401,7 +399,7 @@ struct UUIDVersionV7ConfigurationTests {
             "3133-03-23T20:23:23.124Z",
         ].compactMap { (date: String?) in
             try date.map {
-                try #require(formatter.date(from: $0))
+                try strategy.parse($0)
             }
         }
 
@@ -424,7 +422,7 @@ struct UUIDVersionV7ConfigurationTests {
 
             // Check that the new date is always greater than the previous ones.
             for previousResult in results {
-                #expect(previousResult.uuidString < newValue.uuidString, "for '\(formatter.string(from: date))'")
+                #expect(previousResult.uuidString < newValue.uuidString, "for '\(strategy.format(date))'")
             }
 
             results.append(newValue)

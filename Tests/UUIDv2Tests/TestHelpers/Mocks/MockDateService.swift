@@ -11,13 +11,9 @@ import InternalHelpers
 struct MockDateService: DateService {
     let now: Date
 
-    init() {
+    init() throws {
         // Example date from [Appendix A. Test Vectors](https://www.rfc-editor.org/rfc/rfc9562#name-test-vectors).
-        let exampleDate = "2022-02-22T19:22:22Z"
-        guard let date = ISO8601DateFormatter().date(from: exampleDate) else {
-            preconditionFailure("Unable to convert to date: \(exampleDate)")
-        }
-
+        let date = try Date.ISO8601FormatStyle().parse("2022-02-22T19:22:22Z")
         self.init(now: date)
     }
 
@@ -27,7 +23,7 @@ struct MockDateService: DateService {
 }
 
 extension DateService where Self == MockDateService {
-    static func mock() -> Self {
-        Self()
+    static func mock() throws -> Self {
+        try Self()
     }
 }

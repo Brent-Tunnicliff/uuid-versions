@@ -64,6 +64,8 @@ jobs:
     with:
       runs_on: "ubuntu-latest"
       sdks: "${{ matrix.platform }}"
+      # Android requires building and deploying the tests bundle to an emulator to test, so just skipping.
+      skip_tests: ${{ matrix.platform == 'android' }}
       swift_sdk: "swift-${{ matrix.swift_version }}-RELEASE_${{ matrix.platform }}"
       swift_version: "${{ matrix.swift_version }}"
 

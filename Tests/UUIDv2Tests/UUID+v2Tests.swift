@@ -16,10 +16,10 @@ struct UUIDV2Tests {
     private let localID: UInt32 = 2
 
     @Test
-    func matchesTheHardCodedResult() {
+    func matchesTheHardCodedResult() throws {
         let uuid = UUID.v2(
             clockSequenceService: .mock(clockSequence: 0x33C8),
-            dateService: .mock(),
+            dateService: try .mock(),
             domain: domain,
             localID: localID,
             nodeStore: .mock()
