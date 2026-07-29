@@ -6,11 +6,11 @@
 name: Documentation
 
 on:
-  workflow_run:
-    workflows: 
-      - "Pipeline"
-    types: 
-      - completed
+  # workflow_run:
+  #   workflows: 
+  #     - "Pipeline"
+  #   types: 
+  #     - completed
   workflow_dispatch:
 
 permissions:
