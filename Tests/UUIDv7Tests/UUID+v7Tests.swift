@@ -301,7 +301,9 @@ struct UUIDVersionV7ConfigurationTests {
     }
 
     /// Sanity test that the real sleep logic does not take a long time.
-    @Test(arguments: CounterArgument.allCases)
+    ///
+    /// Disabled if WASM due to issues with `Task.sleep(for:)`
+    @Test(.disabled(if: isWasm), arguments: CounterArgument.allCases)
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func waitingForNextTimestampShouldBeVerySmall(_ argument: CounterArgument) async throws {
         try await withThrowingTaskGroup { group in

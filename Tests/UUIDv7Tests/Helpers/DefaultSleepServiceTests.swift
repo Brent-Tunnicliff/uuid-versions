@@ -23,7 +23,8 @@ struct DefaultSleepServiceTests {
         }
     }
 
-    @Test(arguments: Argument.allCases)
+    // Disabled if WASM due to issues with `Task.sleep(for:)`
+    @Test(.disabled(if: isWasm), arguments: Argument.allCases)
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func waitUntilNextTimestamp(_ argument: Argument) async throws {
         let initialTimestamp = Timestamp(milliseconds: 0, fraction: 0)
@@ -62,7 +63,9 @@ struct DefaultSleepServiceTests {
     }
 
     /// Sanity test that the real wait does not take longer than expected.
-    @Test
+    ///
+    /// Disabled if WASM due to issues with `Task.sleep(for:)`
+    @Test(.disabled(if: isWasm))
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     func sanityTest() async throws {
         let sleepService: any SleepService = .default
