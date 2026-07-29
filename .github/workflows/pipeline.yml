@@ -62,7 +62,7 @@ jobs:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
     name: "swift (${{ matrix.platform }})"
     with:
-      runs_on: "ubuntu-latest"
+      runs_on: "macos-latest"
       sdks: "${{ matrix.platform }}"
       # Android requires building and deploying the tests bundle to an emulator to test, so just skipping.
       skip_tests: ${{ matrix.platform == 'android' }}
