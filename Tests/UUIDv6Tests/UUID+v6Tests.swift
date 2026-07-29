@@ -21,6 +21,7 @@ struct UUIDV6Tests {
 
     // https://www.rfc-editor.org/rfc/rfc9562#name-example-of-a-uuidv6-value
     @Test
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func matchesTheStandardExample() throws {
         let uuid = UUID.v6(
             clockSequenceGenerator: .mock(),

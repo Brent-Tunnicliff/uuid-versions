@@ -31,6 +31,7 @@ struct UUIDV7Tests {
 
     // https://www.rfc-editor.org/rfc/rfc9562#name-example-of-a-uuidv6-value
     @Test
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func matchesTheStandardExample() throws {
         // MockDateService uses the common RFC9562 date example by default, so lets just reference it here.
         let mockDateService = try MockDateService()
@@ -106,6 +107,7 @@ struct UUIDVersionV7ConfigurationTests {
     private let mockRandomNumberGenerator: MockRandomNumberGenerator
     private let mockTimestampService: MockTimestampService
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init() throws {
         let date = try Date.ISO8601FormatStyle(includingFractionalSeconds: true).parse("2022-02-22T19:22:22.123Z")
 

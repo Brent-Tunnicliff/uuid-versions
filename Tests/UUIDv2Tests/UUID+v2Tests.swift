@@ -16,6 +16,7 @@ struct UUIDV2Tests {
     private let localID: UInt32 = 2
 
     @Test
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func matchesTheHardCodedResult() throws {
         let uuid = UUID.v2(
             clockSequenceService: .mock(clockSequence: 0x33C8),

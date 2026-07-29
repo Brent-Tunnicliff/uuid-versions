@@ -12,6 +12,7 @@ import Testing
 @Suite("Date+millisecondsSince1970Tests")
 struct DateMillisecondsSince1970Tests {
     @Test
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func millisecondsSince1970() throws {
         let strategy = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
         let date = try strategy.parse("2000-01-01T00:00:00.123Z")
