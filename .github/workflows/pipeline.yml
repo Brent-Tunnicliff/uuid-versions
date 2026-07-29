@@ -71,3 +71,32 @@ jobs:
 
   lint:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/lint.yml@v2
+
+  # DELETE ME: testing out wasm to see if a real fix is work the effort.
+  wasm_temp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: SwiftyLab/setup-swift@v1
+        with:
+          sdks: "wasm"
+          swift-version: "6.3.3"
+
+      - name: List environment variables
+        shell: bash
+        run: set
+
+      - uses: actions/checkout@v6
+
+      - name: Build debug
+        run: swift build
+          --configuration debug
+          --swift-sdk "swift-6.3.3-RELEASE_wasm"
+
+      - name: Build tests
+        run: swift build 
+          --build-tests
+          --swift-sdk "swift-6.3.3-RELEASE_wasm"
+
+      - name: Run tests
+        run: swift test 
+          --swift-sdk "swift-6.3.3-RELEASE_wasm"
