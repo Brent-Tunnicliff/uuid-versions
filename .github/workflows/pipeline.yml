@@ -22,10 +22,10 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-          { platform: "iOS", simulator_version: "26.2" },
-          { platform: "tvOS", simulator_version: "26.2" },
-          { platform: "watchOS", simulator_version: "26.2" },
-          { platform: "visionOS", simulator_version: "26.2" },
+          { platform: "iOS", simulator_version: "26" },
+          { platform: "tvOS", simulator_version: "26" },
+          { platform: "watchOS", simulator_version: "26" },
+          { platform: "visionOS", simulator_version: "26" },
 
           # macOS runs on the host and doesn't need a simulator.
           { platform: "macOS", simulator_version: "" },
@@ -62,7 +62,7 @@ jobs:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
     name: "swift (${{ matrix.platform }})"
     with:
-      runs_on: "macos-latest"
+      runs_on: "ubuntu-latest"
       sdks: "${{ matrix.platform }}"
       # Android requires building and deploying the tests bundle to an emulator to test, so just skipping.
       skip_tests: ${{ matrix.platform == 'android' }}
@@ -71,5 +71,3 @@ jobs:
 
   lint:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/lint.yml@v2
-    with:
-      runs_on: "macos-26"
