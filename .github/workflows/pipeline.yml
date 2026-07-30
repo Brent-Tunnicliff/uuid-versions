@@ -30,7 +30,7 @@ jobs:
           # macOS runs on the host and doesn't need a simulator.
           { platform: "macOS", simulator_version: "" },
         ]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/xcodebuild.yml@v2
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/xcodebuild.yml@documentation_supports_multiple_targets
     with:
       platform: "${{ matrix.target.platform }}"
       runs_on: "macos-26"
@@ -48,7 +48,7 @@ jobs:
           "macos-latest",
           "windows-latest",
         ]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@documentation_supports_multiple_targets
     with:
       runs_on: "${{ matrix.run_on }}"
 
@@ -59,9 +59,11 @@ jobs:
       matrix:
         platform: ["android", "wasm"]
         swift_version: ["6.3.3"]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@documentation_supports_multiple_targets
     name: "swift (${{ matrix.platform }})"
     with:
+      # A bug with wasm means that we cannot run tests if exporting a report, so better to run tests with no report.
+      generate_test_report: ${{ matrix.platform != 'wasm' }}
       runs_on: "ubuntu-latest"
       sdks: "${{ matrix.platform }}"
       # Android requires building and deploying the tests bundle to an emulator to test, so just skipping.
@@ -71,32 +73,3 @@ jobs:
 
   lint:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/lint.yml@v2
-
-  # DELETE ME: testing out wasm to see if a real fix is work the effort.
-  wasm_temp:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: SwiftyLab/setup-swift@v1
-        with:
-          sdks: "wasm"
-          swift-version: "6.3.3"
-
-      - name: List environment variables
-        shell: bash
-        run: set
-
-      - uses: actions/checkout@v6
-
-      - name: Build debug
-        run: swift build
-          --configuration debug
-          --swift-sdk "swift-6.3.3-RELEASE_wasm"
-
-      - name: Build tests
-        run: swift build 
-          --build-tests
-          --swift-sdk "swift-6.3.3-RELEASE_wasm"
-
-      - name: Run tests
-        run: swift test 
-          --swift-sdk "swift-6.3.3-RELEASE_wasm"
