@@ -11,7 +11,7 @@ extension UUID {
     ///
     /// The value is generated based on the namespace and name inputs.
     /// If you input the same values later you get the same UUID.
-    /// Same structure as ``v3(namespace:name:)``, but uses SHA-1 to hash the inputs.
+    /// Same structure as `v3(namespace:name:)`, but uses SHA-1 to hash the inputs.
     ///
     /// - Parameters:
     ///    - namespace: Namespace to use for generating the UUID. Can be a standard one like `dns`, `url`, `oid`, `x500`, or a custom one of your choice.
