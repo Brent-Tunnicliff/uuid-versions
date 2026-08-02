@@ -33,4 +33,3 @@ jobs:
     with:
       fetch_depth: 0
       ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      target_list_json: '["UUIDConstants","UUIDv1","UUIDv2","UUIDv3","UUIDv4","UUIDv5","UUIDv6","UUIDv7","UUIDv8"]'
