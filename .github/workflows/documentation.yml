@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   documentation:
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/documentation.yml@documentation_supports_multiple_targets
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/documentation.yml@v2
     if: >
       ${{
         github.event_name == 'workflow_dispatch' ||

@@ -30,7 +30,7 @@ jobs:
           # macOS runs on the host and doesn't need a simulator.
           { platform: "macOS", simulator_version: "" },
         ]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/xcodebuild.yml@documentation_supports_multiple_targets
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/xcodebuild.yml@v2
     with:
       platform: "${{ matrix.target.platform }}"
       runs_on: "macos-26"
@@ -48,7 +48,7 @@ jobs:
           "macos-latest",
           "windows-latest",
         ]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@documentation_supports_multiple_targets
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
     with:
       runs_on: "${{ matrix.run_on }}"
 
@@ -59,7 +59,7 @@ jobs:
       matrix:
         platform: ["android", "wasm"]
         swift_version: ["6.3.3"]
-    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@documentation_supports_multiple_targets
+    uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
     name: "swift (${{ matrix.platform }})"
     with:
       # A bug with wasm means that we cannot run tests if exporting a report, so better to run tests with no report.
