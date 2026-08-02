@@ -40,13 +40,23 @@ Import via SPM:
 let package = Package(
     // ...
     dependencies: [
-        .package(url: "https://github.com/Brent-Tunnicliff/uuid-extensions.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/Brent-Tunnicliff/uuid-versions.git", .upToNextMajor(from: "1.0.0")),
     ],
     targets: [
         .target(
             // ...
             dependencies: [
-                .product(name: "UUIDExtensions", package: "uuid-extensions"),
+                // Each version is a separate product.
+                // Import the ones needed.
+                .product(name: "UUIDv1", package: "uuid-versions"),
+                .product(name: "UUIDv2", package: "uuid-versions"),
+                .product(name: "UUIDv3", package: "uuid-versions"),
+                .product(name: "UUIDv4", package: "uuid-versions"),
+                .product(name: "UUIDv5", package: "uuid-versions"),
+                .product(name: "UUIDv6", package: "uuid-versions"),
+                .product(name: "UUIDv7", package: "uuid-versions"),
+                .product(name: "UUIDv8", package: "uuid-versions"),
+                .product(name: "UUIDConstants", package: "uuid-versions"),
             ]
 ```
 
@@ -54,10 +64,10 @@ let package = Package(
 
 Each UUID version is split into its own target.
 
-This is to limit the amount of code and dependancies that get bundled up as 
+This is to limit the amount of code and dependencies that get bundled up as 
 most use cases will only warrant one or two of these in a project.
 
-There are cases where minor duplications across multiple targets were accepted to reduce complexity 
+There are cases where minor duplication across multiple targets were accepted to reduce complexity 
 and keep targets as self contained as possible.   
 
 ### UUIDv1
@@ -72,7 +82,7 @@ By default on Darwin based platforms it will persist the random node value to `U
 if missing then keep reusing it.
 By default on non-Darwin based platforms it will store a random node in memory.
 
-But you can customise this to define your own implementation.
+But you can customize this to define your own implementation.
 
 ```swift
 // Default implementation for that platform.
@@ -102,7 +112,7 @@ let id: UUID = .v1(nodeStore: .randomUserDefaults)
 
 Very similar to v1, but embeds the domain and local id for linking to the creator if that level of audibility is needed.
 
-It sacrifices a lot of its randomness, increasing the risk of collisions (same UUID value bing generated multiple times).
+It sacrifices a lot of its randomness, increasing the risk of collisions (same UUID value being generated multiple times).
 
 V2 is seen as a very niche version.
 
@@ -159,7 +169,7 @@ let id: UUID = .v3(namespace: namespace, name: name)
 
 A randomly generated UUID.
 
-The default `Foundation.UUID()` initialisation uses v4, so this is just a wrapper of that default behaviour.
+The default `Foundation.UUID()` initialization uses v4, so this is just a wrapper of that default behavior.
 
 Has been included for completeness.
 
@@ -341,7 +351,7 @@ let id: UUID = .x500
 
 ### See more
 
-See <https://brent-tunnicliff.github.io/uuid-extensions/documentation/uuidextensions> for more details.
+See <https://brent-tunnicliff.github.io/uuid-versions/documentation> for more details.
 
 ## Source Stability
 

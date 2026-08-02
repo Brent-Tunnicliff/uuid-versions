@@ -34,7 +34,7 @@ jobs:
     with:
       platform: "${{ matrix.target.platform }}"
       runs_on: "macos-26"
-      scheme: "uuid-extensions"
+      scheme: "uuid-versions"
       simulator_version: "${{ matrix.target.simulator_version }}"
       xcode_path: "/Applications/Xcode_26.6.app"
 

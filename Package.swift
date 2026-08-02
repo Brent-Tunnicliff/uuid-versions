@@ -18,7 +18,7 @@ let nonDarwinDependencyCondition = TargetDependencyCondition.when(
 )
 
 let package = Package(
-    name: "uuid-extensions",
+    name: "uuid-versions",
     platforms: [
         .iOS(.v13),
         .macCatalyst(.v13),
