@@ -33,4 +33,3 @@ jobs:
     with:
       fetch_depth: 0
       ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      target: "UUIDExtensions"

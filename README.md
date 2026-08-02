@@ -1,11 +1,16 @@
-# uuid-extensions
+# uuid-versions
 
-The purpose of this project is:
+The main purpose of this project is to expand Foundation UUID creation to support various versions 
+as per [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562).
 
-1. Expand Foundation UUID creation to support various versions as per [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) as creating a new Foundation.UUID object uses v4.
-2. Provide a macro for creating UUID's with StaticString that fails the build instead of returning optional if the input is invalid.
-3. Provide constants for `nil` and `max` UUIDs. 
-4. Support all swift platforms that can import Foundation.UUID. But if any platform requires too much custom work to get working then I may decide to ignore.
+It also includes constants for `nil` and `max` UUIDs.
+ 
+The goal is to support all swift platforms that can import Foundation.UUID or FoundationEssentials.UUID.
+But if any platform requires too much custom work to get working then I may decide to ignore.
+
+I added all the versions just for the fun of it, but realistically v5 & v7 are probably the only useful ones to most.
+v4 is the default created with `UUID()`, so that one is just a wrapper if the syntax is wanted.
+But all other ones are niche and/or legacy that you can avoid unless needed.
 
 ## Supported platforms
 
@@ -25,7 +30,7 @@ Other supported platforms:
 - Windows
 
 > [!WARNING]
-> These other platforms have only been tested via CI pipeline. Some only by building. So please report any issues found with them.
+> These other platforms have only been tested via CI pipeline. So please report any issues found with them.
 
 ## Installation
 
@@ -35,97 +40,112 @@ Import via SPM:
 let package = Package(
     // ...
     dependencies: [
-        .package(url: "https://github.com/Brent-Tunnicliff/uuid-extensions.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/Brent-Tunnicliff/uuid-versions.git", .upToNextMajor(from: "1.0.0")),
     ],
     targets: [
         .target(
             // ...
             dependencies: [
-                .product(name: "UUIDExtensions", package: "uuid-extensions"),
+                // Each version is a separate product.
+                // Import the ones needed.
+                .product(name: "UUIDv1", package: "uuid-versions"),
+                .product(name: "UUIDv2", package: "uuid-versions"),
+                .product(name: "UUIDv3", package: "uuid-versions"),
+                .product(name: "UUIDv4", package: "uuid-versions"),
+                .product(name: "UUIDv5", package: "uuid-versions"),
+                .product(name: "UUIDv6", package: "uuid-versions"),
+                .product(name: "UUIDv7", package: "uuid-versions"),
+                .product(name: "UUIDv8", package: "uuid-versions"),
+                .product(name: "UUIDConstants", package: "uuid-versions"),
             ]
 ```
 
 ## How to use
 
-### UUID Versions
+Each UUID version is split into its own target.
 
-#### UUID v1
+This is to limit the amount of code and dependencies that get bundled up as 
+most use cases will only warrant one or two of these in a project.
+
+There are cases where minor duplication across multiple targets were accepted to reduce complexity 
+and keep targets as self contained as possible.   
+
+### UUIDv1
 
 Time and node based UUID.
 
 Node is typically based on the MAC address of the machine that generates it, 
-but due to complexity around supporting that for a niche version,  decided to go for the option
+but due to complexity around supporting that for a niche version, decided to go for the option
 of a randomly generated node.
 
-By default it will persist the node value to `UserDefaults`. But you can customise this to be in memory only, 
-or add encryption when storing it in UserDefaults.
+By default on Darwin based platforms it will persist the random node value to `UserDefaults` 
+if missing then keep reusing it.
+By default on non-Darwin based platforms it will store a random node in memory.
 
-Example: C232AB00-9414-11EC-B3C8-9F6BDECED846
+But you can customize this to define your own implementation.
 
 ```swift
-// Default implementation 
-let id: UUID = .v1
+// Default implementation for that platform.
+let id: UUID = .v1()
 ```
 
 ```swift
-// Keep state in memory only
-let id: UUID = .v1(dataStore: .inMemory)
+// Keep a constant state in memory only.
+let id: UUID = .v1(nodeStore: .constantInMemory(node))
 ```
 
 ```swift
-// Persist state to disk.
-let id: UUID = .v1(dataStore: .persistent)
+// Generate a random value and keep in memory only.
+// Default for non-Darwin platforms.
+let id: UUID = .v1(nodeStore: .randomInMemory)
 ```
 
 ```swift
-// Persist encrypted state to disk.
-// The same key needs to be used to decrypt, so store it somewhere secure.
-// An optional `authenticatedData` can also be passed in as an extra check that always needs to be the same value.
-let key = SymmetricKey(size: .bits256)
-let data: Data?
-let id: UUID = .v1(dataStore: .securePersistent(key: key, authenticatedData: data))
+// Generate a random value and persist to UserDefaults.
+// Default for Darwin platforms, not available for non-Darwin platforms.
+let id: UUID = .v1(nodeStore: .randomUserDefaults)
 ```
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-1>
 
-#### UUID v2
+### UUIDv2
 
 Very similar to v1, but embeds the domain and local id for linking to the creator if that level of audibility is needed.
 
-It sacrifices a lot of its randomness, increasing the risk of collisions (same UUID value bing generated multiple times).
+It sacrifices a lot of its randomness, increasing the risk of collisions (same UUID value being generated multiple times).
 
 V2 is seen as a very niche version.
+
+UUIDv2 imports UUIDv1 to reuse parts of it's logic since it is effectively just tweaks of UUIDv1 anyway.
 
 ```swift
 let domain: UInt8
 let localID: UInt32
 
-// Default implementation
+// Default implementation for that platform.
 let id: UUID = .v2(domain: domain, localID: localID)
 ```
 
 ```swift
-// Keep state in memory only
-let id: UUID = .v2(dataStore: .inMemory, domain: domain, localID: localID)
+// Keep a constant state in memory only.
+let id: UUID = .v2(domain: domain, localID: localID, nodeStore: .constantInMemory(node))
 ```
 
 ```swift
-// Persist state to disk.
-let id: UUID = .v2(dataStore: .persistent, domain: domain, localID: localID)
+// Generate a random value and keep in memory only.
+// Default for non-Darwin platforms.
+let id: UUID = .v2(domain: domain, localID: localID, nodeStore: .randomInMemory)
 ```
 
 ```swift
-// Persist encrypted state to disk.
-// The same key needs to be used to decrypt, so store it somewhere secure.
-// An optional `authenticatedData` can also be passed in as an extra check that always needs to be the same value.
-let key = SymmetricKey(size: .bits256)
-let data: Data?
-let id: UUID = .v2(dataStore: .securePersistent(key: key, authenticatedData: data), domain: domain, localID: localID)
+// Generate a random value and persist to UserDefaults.
+// Default for Darwin platforms, not available for non-Darwin platforms.
+let id: UUID = .v2(domain: domain, localID: localID, nodeStore: .randomUserDefaults)
 ```
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-2>
 
-#### UUID v3
+### UUIDv3
 
 Generates UUID based on hashing the namespace and name inputs with MD5.
 
@@ -145,24 +165,24 @@ let id: UUID = .v3(namespace: namespace, name: name)
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-3>
 
-#### UUID v4
+### UUIDv4
 
 A randomly generated UUID.
 
-The default `Foundation.UUID()` initialisation uses v4, so this is just a wrapper of that default behaviour.
+The default `Foundation.UUID()` initialization uses v4, so this is just a wrapper of that default behavior.
 
 Has been included for completeness.
 
 ```swift
-let id: UUID = .v4
+let id: UUID = .v4()
 
-// is the same as
+// is just a wrapper of:
 let id: UUID = UUID()
 ```
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-4>
 
-#### UUID v5
+### UUIDv5
 
 The same inputs and similar method to v3, except uses SHA-1 to hash the inputs.
 
@@ -180,7 +200,7 @@ let id: UUID = .v5(namespace: namespace, name: name)
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-5>
 
-#### UUID v6
+### UUIDv6
 
 Similar to `v1`, but reordered the leading timestamp for improved DB locality.
 
@@ -189,18 +209,18 @@ This is also following the recommendation to use a new random node and clock seq
 It is recommended to use `v7` over this if possible.
 
 ```swift
-let id: UUID = .v6
+let id: UUID = .v6()
 ```
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-6>
 
-#### UUID v7
+### UUIDv7
 
 Time-ordered UUID, useful when the wanting the UUID value to increment with each new one.
 
 Generates with milliseconds in the most significant bits and random for the remaining.
 
-Optional configurations can be used to increase the precision of the timestamp to microseconds, and/or adding counter logic.
+Optional configurations can be used to increase the precision of the timestamp to sub-milliseconds, and/or adding counter logic.
 
 Both of the counter options guarantee that the UUID will always increment from the last, even if many get generated within the same timestamp value.
 
@@ -208,18 +228,18 @@ Both of the counter options guarantee that the UUID will always increment from t
 - Monotonic random counter makes sure the random values of the UUID are always a higher value then any previous values that share the same timestamp in a way that makes predicting the next value difficult.
 
 For both counter types, in the edge case that we reach the highest possible value for that timestamp, it will sleep and wait for the next time stamp value.
-This can be either 1 millisecond, or 1 microsecond based on if increased clock precision is enabled or not.
+This can be either 1 millisecond, or less based on if increased clock precision is enabled or not.
 
 ```swift
 // Default implementation
-let id: UUID = .v7
+let id: UUID = .v7()
 
 // or
 let id: UUID = .v7(configuration: .default)
 ``` 
 
 ```swift
-// Generates timestamp with microseconds 
+// Generates timestamp with sub-milliseconds 
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision)
 ```
 
@@ -234,18 +254,18 @@ let id: UUID = .v7(configuration: .with(counter: .monotonicRandom))
 ```
 
 ```swift
-// Generates timestamp with microseconds and the fixed length counter
+// Generates timestamp with sub-milliseconds and the fixed length counter
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision(counter: .fixedLength))
 ```
 
 ```swift
-// Generates timestamp with microseconds and the monotonic random counter
+// Generates timestamp with sub-milliseconds and the monotonic random counter
 let id: UUID = .v7(configuration: .withIncreasedClockPrecision(counter: .monotonicRandom))
 ```
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-7>
 
-#### UUID v8
+### UUIDv8
 
 Provides a format for experimental or vendor-specific use cases.
 
@@ -258,26 +278,7 @@ Can be generated based on:
 
 <https://www.rfc-editor.org/rfc/rfc9562#name-uuid-version-8>
 
-### Macro
-
-This freestanding macro can be used directly wherever the UUID needs to be created with:
-
-```swift
-import UUIDExtensions
-
-let id: UUID = #uuid("95034084-7faa-4311-88dc-3cbc8052b359")
-```
-
-The input is type "StaticString", so the value must be known at compile time.
-
-If the input does not have a valid UUID format, then you will get a compile error that it isn't a valid UUID.
-
-```swift
-// Compile error: 'hello :)' is not a valid UUID
-let id: UUID = #uuid("hello :)")
-```
-
-### Constants
+### UUIDConstants
 
 The project has a small number of constants defined in [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562).
 They are added as static extension to the Foundation.UUID type.
@@ -350,7 +351,7 @@ let id: UUID = .x500
 
 ### See more
 
-See <https://brent-tunnicliff.github.io/uuid-extensions/documentation/uuidextensions> for more details.
+See <https://brent-tunnicliff.github.io/uuid-versions/documentation> for more details.
 
 ## Source Stability
 
@@ -360,4 +361,4 @@ We'd like this package to quickly embrace Swift language and toolchain improveme
 
 ## Disclaimer
 
-I only pretend to know what I am doing. If you find something wrong please raise an issue to let me know.
+I only ever pretend to know what I am doing. If you find something wrong please raise an issue to let me know.

@@ -10,7 +10,7 @@ on:
     paths:
       - '**.resolved'
       - '**.swift'
-      - '**.yml'
+      - '**/pipeline.yml'
   workflow_dispatch:
 
 permissions: {}
@@ -22,10 +22,10 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-          { platform: "iOS", simulator_version: "26.2" },
-          { platform: "tvOS", simulator_version: "26.2" },
-          { platform: "watchOS", simulator_version: "26.2" },
-          { platform: "visionOS", simulator_version: "26.2" },
+          { platform: "iOS", simulator_version: "26" },
+          { platform: "tvOS", simulator_version: "26" },
+          { platform: "watchOS", simulator_version: "26" },
+          { platform: "visionOS", simulator_version: "26" },
 
           # macOS runs on the host and doesn't need a simulator.
           { platform: "macOS", simulator_version: "" },
@@ -34,9 +34,9 @@ jobs:
     with:
       platform: "${{ matrix.target.platform }}"
       runs_on: "macos-26"
-      scheme: "uuid-extensions"
+      scheme: "uuid-versions"
       simulator_version: "${{ matrix.target.simulator_version }}"
-      xcode_path: "/Applications/Xcode_26.3.app"
+      xcode_path: "/Applications/Xcode_26.6.app"
 
   swift:
     strategy:
@@ -57,22 +57,19 @@ jobs:
       # Don't cancel the other matrix values if one fails.
       fail-fast: false
       matrix:
-        platform: [
-          { sdks: "android", swift_sdk: "swift-6.3-RELEASE_android" },
-          { sdks: "wasm", swift_sdk: "swift-6.3-RELEASE_wasm" },
-        ]
+        platform: ["android", "wasm"]
+        swift_version: ["6.3.3"]
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/swift.yml@v2
-    name: "swift (${{ matrix.platform.sdks }})"
+    name: "swift (${{ matrix.platform }})"
     with:
+      # A bug with wasm means that we cannot run tests if exporting a report, so better to run tests with no report.
+      generate_test_report: ${{ matrix.platform != 'wasm' }}
       runs_on: "ubuntu-latest"
-      sdks: "${{ matrix.platform.sdks }}"
-      # Due to a bug we cannot build test targets for packages that contain macros when cross compiling different archs.
-      # See: https://github.com/swiftlang/swift-package-manager/issues/8094
-      skip_tests: true
-      swift_sdk: "${{ matrix.platform.swift_sdk }}"
-      swift_version: "6.3"
+      sdks: "${{ matrix.platform }}"
+      # Android requires building and deploying the tests bundle to an emulator to test, so just skipping.
+      skip_tests: ${{ matrix.platform == 'android' }}
+      swift_sdk: "swift-${{ matrix.swift_version }}-RELEASE_${{ matrix.platform }}"
+      swift_version: "${{ matrix.swift_version }}"
 
   lint:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/lint.yml@v2
-    with:
-      runs_on: "macos-26"
