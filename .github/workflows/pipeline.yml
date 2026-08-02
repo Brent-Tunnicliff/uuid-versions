@@ -10,7 +10,7 @@ on:
     paths:
       - '**.resolved'
       - '**.swift'
-      - '**.yml'
+      - '**/pipeline.yml'
   workflow_dispatch:
 
 permissions: {}

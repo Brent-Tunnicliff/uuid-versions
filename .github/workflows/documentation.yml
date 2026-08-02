@@ -21,16 +21,16 @@ permissions:
 jobs:
   documentation:
     uses: Brent-Tunnicliff/workflow-common-apple/.github/workflows/documentation.yml@documentation_supports_multiple_targets
-    # if: >
-    #   ${{
-    #     github.event_name == 'workflow_dispatch' ||
-    #     (
-    #       github.event.workflow_run &&
-    #       github.event.workflow_run.conclusion == 'success' &&
-    #       github.event.workflow_run.head_branch == 'main'
-    #     )
-    #   }}
+    if: >
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event.workflow_run &&
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main'
+        )
+      }}
     with:
       fetch_depth: 0
       ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-      target_list_json: "['UUIDConstants','UUIDv1','UUIDv2','UUIDv3','UUIDv4','UUIDv5','UUIDv6','UUIDv7','UUIDv8']"
+      target_list_json: '["UUIDConstants","UUIDv1","UUIDv2","UUIDv3","UUIDv4","UUIDv5","UUIDv6","UUIDv7","UUIDv8"]'
