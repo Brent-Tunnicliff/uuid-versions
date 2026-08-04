@@ -1,5 +1,8 @@
 # uuid-versions
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FBrent-Tunnicliff%2Fuuid-versions%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/Brent-Tunnicliff/uuid-versions)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FBrent-Tunnicliff%2Fuuid-versions%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/Brent-Tunnicliff/uuid-versions)
+
 The main purpose of this project is to expand Foundation UUID creation to support various versions 
 as per [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562).
 
